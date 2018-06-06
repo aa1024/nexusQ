@@ -1,9 +1,147 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <link rel="stylesheet" href="style.css">
-</head>
+<body onload="connect();">
+    <canvas width="960" height="500"></canvas>
+    <button id="refresh" onclick="network()">Launch</button>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+    var canvas = document.querySelector("canvas"),
+        context = canvas.getContext("2d"),
+        width = canvas.width,
+        height = canvas.height;
+    var graph, wsConn;
 
+    function connect() {
+        if ("WebSocket" in window) {
+            wsConn = new WebSocket("ws://localhost:2786/");
+            console.log("Connecting to q process...");
+            wsConn.onopen = function(arg) { console.log("Connection Open"); }
+            wsConn.onclose = function(arg) {
+                console.log("Disconnected");
+                wsConn.close();
+            }
+            wsConn.onmessage = function(arg) {
+                obj = JSON.parse(arg.data);
+                graph = obj[0];
+
+                refresh();
+            }
+            wsConn.onerror = function(arg) { console.log(arg.data); }
+        } else alert("Browser does not support WebSockets");
+    }
+
+    function network() {
+        wsConn.send("network[]");
+    }
+
+
+    function refresh() {
+
+        console.log(graph);
+
+
+        var simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(function(d) { return d.id; }))
+            .force("charge", d3.forceManyBody())
+            .force("center", d3.forceCenter(width / 2, height / 2));
+
+
+        simulation
+            .nodes(graph.nodes)
+            .on("tick", ticked)
+            .force("link")
+            .links(graph.links);
+        d3.select(canvas)
+            .call(d3.drag()
+                .container(canvas)
+                .subject(dragsubject)
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        function ticked() {
+            var margin = 20;
+            graph.nodes.forEach(function(d) {
+                d.x = Math.max(margin, Math.min(width - margin, d.x))
+                d.y = Math.max(margin, Math.min(height - margin, d.y))
+            });
+
+            function dblclick() {
+                graph.nodes.forEach(function(d) {
+                    d.fx = d.fy = null;
+                })
+            };
+            context.clearRect(0, 0, width, height);
+            context.beginPath();
+            graph.links.forEach(drawLink);
+            context.strokeStyle = "#aaa";
+            context.stroke();
+            context.beginPath();
+            graph.nodes.forEach(drawNode);
+
+        }
+
+        function dragsubject() {
+            return simulation.find(d3.event.x, d3.event.y);
+        }
+        var clickDate = new Date();
+        var difference_ms;
+
+        function dragstarted() {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d3.event.subject.fx = Math.max(10, Math.min(width - 10, d3.event.subject.x));
+            d3.event.subject.fy = Math.max(10, Math.min(height - 10, d3.event.subject.y));
+        }
+
+        function dragged() {
+            d3.event.subject.fx = Math.max(10, Math.min(width - 10, d3.event.x));
+            d3.event.subject.fy = Math.max(10, Math.min(height - 10, d3.event.y));
+        }
+
+
+        function dragended() {
+            if (!d3.event.active) simulation.alphaTarget(0);
+
+            // Time between 2 ends of drag:
+            difference_ms = (new Date()).getTime() - clickDate.getTime();
+            clickDate = new Date();
+            // if the time between these 2 ends of drag is short enough, then
+            // it's considered a double click:
+            if (difference_ms < 200) {
+                // And we can release the node:
+                simulation.alphaTarget(0.3).restart()
+                d3.event.subject.fx = null;
+                d3.event.subject.fy = null;
+            }
+        }
+
+
+        function drawLink(d) {
+            context.moveTo(d.source.x, d.source.y);
+            context.lineTo(d.target.x, d.target.y);
+        }
+
+        var nodeColors = d3.scaleOrdinal().range(d3.schemeCategory20),
+            labelColors = d3.scaleOrdinal().range(['red', 'orange', 'blue', 'green', 'purple']);
+
+        function drawNode(d) {
+            context.beginPath();
+            context.moveTo(d.x + 10, d.y);
+            context.arc(d.x, d.y, 10, 0, 2 * Math.PI);
+            context.strokeStyle = "#fff";
+            context.stroke();
+            context.fillStyle = nodeColors(d.grp);
+            context.closePath();
+            context.fill();
+            context.beginPath();
+            context.font = (d.labelSize ? d.labelSize : 10) + 'px Arial';
+            context.fillStyle = labelColors(d.grp);
+            context.fillText(d.label ? d.label : d.grp, d.x, d.y);
+            context.closePath();
+        }
+    }
+    </script>
+</body>
 
 </html>
