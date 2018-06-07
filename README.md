@@ -12,7 +12,7 @@ It's a project utilizing the websocket capibities of Kdb by a browser for gettin
 
 ### Sample
 
-![](sample.png?raw=true)
+![](nexusQ.png?raw=true)
 
 
 ### Features 
