@@ -12,6 +12,8 @@ It's a project utilizing the websocket capibities of Kdb by a browser for gettin
 
 ### Sample
 
+[[https://github.com/username/repository/blob/master/img/octocat.png|alt=octocat]]
+
 
 ### Features 
 * Color coding of nodes based on groups
