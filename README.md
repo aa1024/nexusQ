@@ -20,3 +20,12 @@ It's a project utilizing the websocket capibities of Kdb by a browser for gettin
 * Drag and stick the nodes on canvas
 * Double-click to release the sticky nodes
 * Auto adjusting network contained within the canvas area
+
+### Todo
+* Color coding of links
+* Sizing of nodes based on the weights
+* Dynamicaly update the network
+* Add icon support to the nodes
+* Add persistent and broken links feature
+
+
