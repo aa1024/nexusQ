@@ -9,5 +9,5 @@ eId:0;
 createNode:{[l] (`id`label`grp`size`x`y)!(l;l;first "_"vs string l;100;0;0) };
 createEdge:{[s;t] eId+:1; (`id`target`source)!(string eId;t;s) };
 
-network:{ ([] edges:enlist links;nodes:enlist nodes)}
+network:{ ([] links:enlist links;nodes:enlist nodes)}
 
