@@ -14,7 +14,7 @@
 
     function connect() {
         if ("WebSocket" in window) {
-            wsConn = new WebSocket("ws://localhost:2786/");
+            wsConn = new WebSocket("ws://localhost:9999/");
             console.log("Connecting to q process...");
             wsConn.onopen = function(arg) { console.log("Connection Open"); }
             wsConn.onclose = function(arg) {
